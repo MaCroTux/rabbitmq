@@ -24,3 +24,7 @@ services:
     image: php7.3-componser
     volumes:
       - ./:/usr/src/myapp
+
+networks:
+  default:
+    name: docker_default
