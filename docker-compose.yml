@@ -18,6 +18,14 @@ services:
     ports:
       - "2083:15672"
 
+  publisher-web:
+    container_name: rabbitmq-web
+    image: php:7.3-apache
+    volumes:
+      - ./:/var/www/html
+    ports:
+    - "2084:80"
+
   cli:
     build: .
     container_name: rabbitmq-cli

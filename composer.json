@@ -1,5 +1,12 @@
 {
     "require": {
         "php-amqplib/php-amqplib": "^2.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "MaCroTux\\Telegram\\": "src/Telegram",
+            "MaCroTux\\HttpUtils\\": "src/HttpUtils"
+        }
     }
+
 }
