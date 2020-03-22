@@ -8,8 +8,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 const RABBITMQ_HOST = "rabbit-manager";
 const RABBITMQ_PORT = 5672;
-const RABBITMQ_USERNAME = "user";
-const RABBITMQ_PASSWORD = "password";
+const RABBITMQ_USERNAME = "guest";
+const RABBITMQ_PASSWORD = "guest";
 const RABBITMQ_QUEUE_NAME = "telegram_message";
 
 $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(

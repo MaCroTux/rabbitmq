@@ -4,8 +4,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 const RABBITMQ_HOST = "rabbit-manager";
 const RABBITMQ_PORT = 5672;
-const RABBITMQ_USERNAME = "user";
-const RABBITMQ_PASSWORD = "password";
+const RABBITMQ_USERNAME = "guest";
+const RABBITMQ_PASSWORD = "guest";
 const RABBITMQ_QUEUE_NAME = "task_queue";
 
 $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
@@ -30,14 +30,15 @@ $channel->queue_declare(
 );
 
 
-echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
-
 $callback = function($msg){
     echo " [x] Received ", $msg->body, "\n";
     $job = json_decode($msg->body, $assocForm=true);
     sleep($job['sleep_period']);
     echo " [x] Done", "\n";
-    $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+
+    /** @var PhpAmqpLib\Channel\AMQPChannel $channel */
+    $channel = $msg->delivery_info['channel'];
+    $channel->basic_ack($msg->delivery_info['delivery_tag']);
 };
 
 $channel->basic_qos(null, 1, null);
@@ -54,6 +55,7 @@ $channel->basic_consume(
 
 while (count($channel->callbacks))
 {
+    echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
     $channel->wait();
 }
 

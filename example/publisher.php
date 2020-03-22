@@ -4,8 +4,8 @@ require_once(__DIR__ . '/../vendor/autoload.php');
 
 const RABBITMQ_HOST = "rabbit-manager";
 const RABBITMQ_PORT = 5672;
-const RABBITMQ_USERNAME = "user";
-const RABBITMQ_PASSWORD = "password";
+const RABBITMQ_USERNAME = "guest";
+const RABBITMQ_PASSWORD = "guest";
 const RABBITMQ_QUEUE_NAME = "task_queue";
 
 $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
@@ -44,6 +44,5 @@ while (true) {
     );
 
     $channel->basic_publish($msg, '', RABBITMQ_QUEUE_NAME);
-    print 'Job created' . PHP_EOL;
-    sleep(1);
+    print 'Job created: ' . $job_id . PHP_EOL;
 }
