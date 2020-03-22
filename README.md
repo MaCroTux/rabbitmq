@@ -49,3 +49,7 @@ If you navigate to the terminar worker ins running, you should see
 ```
 
 Queue is working!
+
+## Others links
+
+Official tutorial: https://github.com/rabbitmq/rabbitmq-tutorials/tree/master/php
