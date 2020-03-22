@@ -1,48 +1,43 @@
 <?php
 
-require_once(__DIR__ . '/../vendor/autoload.php');
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/config.php';
 
-const RABBITMQ_HOST = "rabbit-manager";
-const RABBITMQ_PORT = 5672;
-const RABBITMQ_USERNAME = "guest";
-const RABBITMQ_PASSWORD = "guest";
-const RABBITMQ_QUEUE_NAME = "task_queue";
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 
-$connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
-    RABBITMQ_HOST,
-    RABBITMQ_PORT,
-    RABBITMQ_USERNAME,
-    RABBITMQ_PASSWORD
-);
+$connection = new AMQPStreamConnection(HOST, PORT, USERNAME, PASSWORD);
 
 $channel = $connection->channel();
 
-# Create the queue if it does not already exist.
-$channel->queue_declare(
-    $queue = RABBITMQ_QUEUE_NAME,
-    $passive = false,
-    $durable = true,
-    $exclusive = false,
-    $auto_delete = false,
-    $nowait = false,
-    $arguments = null,
-    $ticket = null
-);
+$channel->queue_declare('task_queue', false, true, false, false);
 
 $job_id = 0;
 
 while (true) {
-    $jobArray = array(
-        'id' => $job_id++,
+    $jobArray = [
+        'id' => uniqid(),
+        'job_number' => $job_id++,
         'task' => 'sleep',
         'sleep_period' => rand(0, 3)
+    ];
+
+    $data = json_encode($jobArray, JSON_UNESCAPED_SLASHES);
+
+    $msg = new AMQPMessage(
+        $data,
+        [
+            'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT
+        ]
     );
 
-    $msg = new \PhpAmqpLib\Message\AMQPMessage(
-        json_encode($jobArray, JSON_UNESCAPED_SLASHES),
-        array('delivery_mode' => 2) # make message persistent
-    );
-
-    $channel->basic_publish($msg, '', RABBITMQ_QUEUE_NAME);
+    $channel->basic_publish($msg, '', QUEUE_NAME);
     print 'Job created: ' . $job_id . PHP_EOL;
+
+    echo ' [x] Sent Job ' . $job_id .' : '.  $data . "\n";
+
+    sleep(1);
 }
+
+$channel->close();
+$connection->close();

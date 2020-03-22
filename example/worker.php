@@ -1,38 +1,20 @@
 <?php
 
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/config.php';
 
-const RABBITMQ_HOST = "rabbit-manager";
-const RABBITMQ_PORT = 5672;
-const RABBITMQ_USERNAME = "guest";
-const RABBITMQ_PASSWORD = "guest";
-const RABBITMQ_QUEUE_NAME = "task_queue";
-
-$connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
-    RABBITMQ_HOST,
-    RABBITMQ_PORT,
-    RABBITMQ_USERNAME,
-    RABBITMQ_PASSWORD
-);
+$connection = new AMQPStreamConnection(HOST, PORT, USERNAME, PASSWORD);
 
 $channel = $connection->channel();
 
 # Create the queue if it doesnt already exist.
-$channel->queue_declare(
-    $queue = RABBITMQ_QUEUE_NAME,
-    $passive = false,
-    $durable = true,
-    $exclusive = false,
-    $auto_delete = false,
-    $nowait = false,
-    $arguments = null,
-    $ticket = null
-);
+$channel->queue_declare('task_queue', false, true, false, false);
 
-
-$callback = function($msg){
+$callback = static function($msg) {
     echo " [x] Received ", $msg->body, "\n";
-    $job = json_decode($msg->body, $assocForm=true);
+    $job = json_decode($msg->body, true);
     sleep($job['sleep_period']);
     echo " [x] Done", "\n";
 
@@ -42,20 +24,11 @@ $callback = function($msg){
 };
 
 $channel->basic_qos(null, 1, null);
+$channel->basic_consume(QUEUE_NAME, '', false, false, false, false, $callback);
 
-$channel->basic_consume(
-    $queue = RABBITMQ_QUEUE_NAME,
-    $consumer_tag = '',
-    $no_local = false,
-    $no_ack = false,
-    $exclusive = false,
-    $nowait = false,
-    $callback
-);
+echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
-while (count($channel->callbacks))
-{
-    echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
+while (count($channel->callbacks)) {
     $channel->wait();
 }
 

@@ -1,25 +1,20 @@
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
-
-const RABBITMQ_HOST = "rabbit-manager";
-const RABBITMQ_PORT = 5672;
-const RABBITMQ_USERNAME = "user";
-const RABBITMQ_PASSWORD = "password";
-const RABBITMQ_QUEUE_NAME = "telegram_message";
+require_once __DIR__ . '/example/config.php';
 
 $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
-    RABBITMQ_HOST,
-    RABBITMQ_PORT,
-    RABBITMQ_USERNAME,
-    RABBITMQ_PASSWORD
+    HOST,
+    PORT,
+    USERNAME,
+    PASSWORD
 );
 
 $channel = $connection->channel();
 
 # Create the queue if it does not already exist.
 $channel->queue_declare(
-    $queue = RABBITMQ_QUEUE_NAME,
+    $queue = QUEUE_NAME,
     $passive = false,
     $durable = true,
     $exclusive = false,
@@ -42,6 +37,6 @@ $msg = new \PhpAmqpLib\Message\AMQPMessage(
     array('delivery_mode' => 2) # make message persistent
 );
 
-$channel->basic_publish($msg, '', RABBITMQ_QUEUE_NAME);
+$channel->basic_publish($msg, '', QUEUE_NAME);
 
 print 'Job created' . PHP_EOL;

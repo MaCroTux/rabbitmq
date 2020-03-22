@@ -13,17 +13,17 @@ const RABBITMQ_PASSWORD = "guest";
 const RABBITMQ_QUEUE_NAME = "telegram_message";
 
 $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
-    RABBITMQ_HOST,
-    RABBITMQ_PORT,
-    RABBITMQ_USERNAME,
-    RABBITMQ_PASSWORD
+    HOST,
+    PORT,
+    USERNAME,
+    PASSWORD
 );
 
 $channel = $connection->channel();
 
 # Create the queue if it doesnt already exist.
 $channel->queue_declare(
-    $queue = RABBITMQ_QUEUE_NAME,
+    $queue = QUEUE_NAME,
     $passive = false,
     $durable = true,
     $exclusive = false,
@@ -65,7 +65,7 @@ $callback = function ($msg) {
 $channel->basic_qos(null, 1, null);
 
 $channel->basic_consume(
-    $queue = RABBITMQ_QUEUE_NAME,
+    $queue = QUEUE_NAME,
     $consumer_tag = '',
     $no_local = false,
     $no_ack = false,
